@@ -1,9 +1,9 @@
-from chroma import Chroma
-from config import Configuration
-from embedder import Embedder
-from reranker import Reranker
-from data_reader import DataReader
-from gpt import Gpt
+from src.chroma import Chroma
+from src.config import Configuration
+from src.embedder import Embedder
+from src.reranker import Reranker
+from src.data_reader import DataReader
+from src.gpt import Gpt
 
 class Flow:
 
@@ -50,10 +50,3 @@ class Flow:
         answer = self._gpt.generate_answer(question, contexts)
         print("\n\n=== Answer ===\n")
         print(answer)
-
-
-if __name__ == "__main__":
-    config = Configuration.default_config()
-    flow = Flow(config)
-    flow.read_and_embed_logs()
-    flow.ask_question("What's the weather like where Alice is?")

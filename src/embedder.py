@@ -6,8 +6,8 @@ from typing import Mapping, Optional, Union, List, Tuple, cast, Any
 from sentence_transformers import SentenceTransformer
 from chromadb.api.models.Collection import Collection
 
-from model_dirs import get_model_dir
-from user_log import UserLog
+from src.model_dirs import get_model_dir
+from src.user_log import UserLog
 
 
 Metadata = Mapping[str, Optional[Union[str, int, float, bool]]]

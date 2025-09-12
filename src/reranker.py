@@ -1,7 +1,7 @@
 import numpy as np
 from sentence_transformers import CrossEncoder
 
-from model_dirs import get_model_dir
+from src.model_dirs import get_model_dir
 
 
 class Reranker:

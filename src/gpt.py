@@ -1,8 +1,8 @@
 from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 import torch
 
-from stopwatch import Stopwatch
-from model_dirs import get_model_dir
+from src.stopwatch import Stopwatch
+from src.model_dirs import get_model_dir
 
 # Load a local instruct-tuned LLM (quantized GGUF version with llama.cpp is even easier)
 

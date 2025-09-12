@@ -1,6 +1,6 @@
 from datetime import datetime
 import json
-from user_log import UserLog
+from src.user_log import UserLog
 
 
 class DataReader:
