@@ -1,8 +1,8 @@
 from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 import torch
 
-from stopwatch import Stopwatch
-from models.model_dirs import get_model_dir
+from src.stopwatch import Stopwatch
+from src.model_dirs import get_model_dir
 
 # Load a local instruct-tuned LLM (quantized GGUF version with llama.cpp is even easier)
 
@@ -70,6 +70,7 @@ class Gpt:
         stopwatch.stop()
         print(f"Finished generating answer")
         full_answer = self._tokenizer.decode(outputs[0], skip_special_tokens=True)
+        print(f"Full answer from GPT:\n{full_answer}\n\nExtracting relavnt answer\n")
 
         answer = self.find_answer(prompt, full_answer, ";;;")
         return answer

@@ -1,6 +1,7 @@
+import numpy as np
 from sentence_transformers import CrossEncoder
 
-from models.model_dirs import get_model_dir
+from src.model_dirs import get_model_dir
 
 
 class Reranker:
@@ -31,8 +32,31 @@ class Reranker:
     
     #         return predict
 
-    def _get_closest_indexes(self, pairs: list[tuple[str, str]]):
-        return self._reranker_model.predict(pairs)
+    def _get_closest_indexes(self, pairs: list[tuple[str, str]], top_k: int = 1) -> list[int]:
+
+        print("Question to rerank:", pairs[0][0])
+        contexts_str = "\n".join([p[1] for p in pairs])
+        print(f"Reranking pairs {contexts_str} to get top {top_k} results...")
+
+        scores = self._reranker_model.predict(pairs)
+
+        # convert to array for easy indexing
+        scores = np.array(scores)
+
+        # get indices of top 3
+        top3_idx_darray = scores.argsort()[::-1][:top_k]  # descending sort
+        top3_idx = [i for i in top3_idx_darray]
+
+        # fetch top 3 pairs and scores
+
+        top3_pairs = [pairs[i] for i in top3_idx]
+        top3_scores = scores[top3_idx]
+
+        for i, (pair, score) in enumerate(zip(top3_pairs, top3_scores), 1):
+            print(f"Rank {i}: Score={score:.4f}, Pair={pair}")
+        
+        return top3_idx
+    
 
     def _get_reranker_model(self, model_name) -> CrossEncoder:
         model_path = get_model_dir(model_name)
