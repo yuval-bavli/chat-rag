@@ -9,7 +9,7 @@ class DataReader:
         self._input_file = input_file
 
 
-    def read_comments(self) -> list[UserLog]:
+    def read_logs(self) -> list[UserLog]:
 
         comments = []
         json_obj = self._read_json(self._input_file)

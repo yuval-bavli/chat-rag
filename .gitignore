@@ -1,5 +1,6 @@
 .vscode
 models/*/
 chroma_db/
+test_chroma_db/
 rag_env/
 __pycache__/

@@ -22,7 +22,7 @@ class Flow:
 
 
     def read_and_embed_logs(self) -> None:
-        self._user_logs = self._reader.read_comments()
+        self._user_logs = self._reader.read_logs()
         self._embedder.embed_messages(self._user_logs)
 
 
