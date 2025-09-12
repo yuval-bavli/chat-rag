@@ -10,7 +10,8 @@ CHROMA_DIR = "chroma_db"     # folder to store Chroma DB
 VECTOR_MODEL_NAME = VECTOR_MODEL_NAME2
 COLLECTION_NAME = "facebook_comments"
 
-N_RESULTS = 2
+CONTEXT_RESULTS_COUNT = 10
+REFINED_CONTEXT_RESULTS_COUNT = 3
 
 
 class Configuration(NamedTuple):
@@ -20,10 +21,21 @@ class Configuration(NamedTuple):
     rerank_model_name: str
     gpt_model_name: str
     collection_name: str
-    n_results: int
+    context_results_count: int
+    refined_context_results_count: int
     clear_collection: bool
 
 
     @staticmethod
     def default_config():
-        return Configuration(JSON_FILE, CHROMA_DIR, VECTOR_MODEL_NAME, RERANK_MODEL_NAME, GPT_MODEL_NAME, COLLECTION_NAME, N_RESULTS, True)
+        return Configuration(
+            JSON_FILE,
+            CHROMA_DIR,
+            VECTOR_MODEL_NAME,
+            RERANK_MODEL_NAME,
+            GPT_MODEL_NAME,
+            COLLECTION_NAME,
+            CONTEXT_RESULTS_COUNT,
+            REFINED_CONTEXT_RESULTS_COUNT,
+            True
+        )
