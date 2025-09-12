@@ -1,11 +1,13 @@
 from typing import NamedTuple
+import os
 
 
 VECTOR_MODEL_NAME1 = "sentence-transformers/multi-qa-MiniLM-L6-cos-v1"
 VECTOR_MODEL_NAME2 = "intfloat/multilingual-e5-small"
 RERANK_MODEL_NAME = "cross-encoder/ms-marco-MiniLM-L6-v2"
 GPT_MODEL_NAME = "meta-llama/Meta-Llama-3.1-8B-Instruct"
-JSON_FILE = R"C:\Users\yuval\src\facebook_summarizer\input\comments.json"
+# Point to the workspace input/comments.json by default
+JSON_FILE = os.path.join(os.path.dirname(__file__), "..", "input", "comments.json")
 CHROMA_DIR = "chroma_db"     # folder to store Chroma DB
 VECTOR_MODEL_NAME = VECTOR_MODEL_NAME2
 COLLECTION_NAME = "facebook_comments"

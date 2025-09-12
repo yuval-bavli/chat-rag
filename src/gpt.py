@@ -70,6 +70,7 @@ class Gpt:
         stopwatch.stop()
         print(f"Finished generating answer")
         full_answer = self._tokenizer.decode(outputs[0], skip_special_tokens=True)
+        print(f"Full answer from GPT:\n{full_answer}\n\nExtracting relavnt answer\n")
 
         answer = self.find_answer(prompt, full_answer, ";;;")
         return answer
