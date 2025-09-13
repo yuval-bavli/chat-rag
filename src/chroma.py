@@ -49,7 +49,7 @@ class Chroma:
         )
 
 
-    def find_similar(self, embeddings: list[list[float]], where: Optional[str] = None, n_results: int = 5) -> list[EmbedResult]:
+    def find_similar(self, embeddings: list[list[float]], where_clause: Optional[dict] = None, n_results: int = 5) -> list[EmbedResult]:
         """
         Find top-N semantically similar messages to `query`.
 
@@ -62,12 +62,10 @@ class Chroma:
 
         embeddings_list = [cast(Embedding, e) for e in embeddings]
 
-        where_cast = cast(Any, where)
-
         query_result = self.collection.query(
             query_embeddings=embeddings_list,
             n_results=n_results,
-            where=where_cast,
+            where=where_clause,
         )
 
         # Chroma returns lists-of-lists for batch queries; get first batch safely

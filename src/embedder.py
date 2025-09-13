@@ -23,7 +23,9 @@ class Embedder:
 
     def embed_messages(self, user_logs: List[UserLog]) -> list[EmbedResult]:
         print("Creating embeddings...")
-        texts = [f"At {c.timestamp}, {c.name} wrote: {c.message}" for c in user_logs]
+        texts = [f"{c.name}: {c.message}" for c in user_logs]
+        # texts = [f"At {c.timestamp}, {c.name} wrote: {c.message}" for c in user_logs]
+        # texts = [c.message for c in user_logs]
         # request numpy output so we can easily convert to lists for Chroma
         embeddings: list[list[float]] = self._embedder.encode(texts, show_progress_bar=True, convert_to_numpy=True).tolist()
 

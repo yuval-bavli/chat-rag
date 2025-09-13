@@ -1,21 +1,23 @@
 import os
 
+import pytest
+
 from src.chroma import Chroma
 from src.config import Configuration
 from src.embedder import Embedder
 from src.data_reader import DataReader
 
 
-def test_embedder_find_similar_flow() -> None:
-    _embedder_find_similar_flow(with_name=False)
-
-
-def _embedder_find_similar_flow(with_name: bool) -> None:
+@pytest.mark.parametrize("with_name", [
+    pytest.param(True, id="with_name"), 
+    pytest.param(False, id="without_name")
+])
+def test_embedder_find_similar_flow(with_name: bool) -> None:
     # Arrange:
 
     question = "What's the weather like for Alice?"
-    n_results = 3
-    name = "Alice" if with_name else None
+    n_results = 5
+    name = "Alice Brown"
 
     # Read test data
     base = os.path.dirname(__file__)
@@ -38,15 +40,17 @@ def _embedder_find_similar_flow(with_name: bool) -> None:
 
     embedded_question = embedder.embed_question(question)
 
-    results = chroma.find_similar([embedded_question], name, n_results)
+    where_clause = {"name": name} if with_name else None
+
+    results = chroma.find_similar([embedded_question], where_clause, n_results)
     print(f"Found {len(results)} results:")
     for r in results:
         print(f"- {r.document} (id={r.id}, metadata={r.metadata})") 
 
     # Assert:
-    assert len(results) == 3
+    assert len(results) == n_results
 
     docs = [r.document for r in results]
-    target_message = "Hi everyone! It's raining cats and dogs here."
+    target_message = "Hi everyone! It's raining heavily here."
     # validate one of returned documents contains the target message text
     assert any(target_message in doc for doc in docs), f"Target message was not found in results\nExpected: {target_message}\nDocs found: {docs}"

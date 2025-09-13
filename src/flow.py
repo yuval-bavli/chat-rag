@@ -30,7 +30,7 @@ class Flow:
         embedded_question = self._embedder.embed_question(question)
         results = self._chroma.find_similar(
             embeddings=[embedded_question],
-            where=None, # for now
+            where_clause=None, # for now
             n_results=self._context_results_count  # number of most relevant comments to return
         )
 
