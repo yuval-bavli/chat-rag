@@ -30,17 +30,20 @@ def _embedder_find_similar_flow(with_name: bool) -> None:
     chroma = Chroma(test_chroma_dir, test_collection_name, delete_if_exists=True)
     
     # Set up embedder (class under test)
-    embedder = Embedder(
-        default_config.embedder_model_name,
-        chroma.collection
-    )
+    embedder = Embedder(default_config.embedder_model_name)
 
     # Act (embed and query):
-    embedder.embed_messages(user_logs)
-    results = embedder.find_similar(question, name, n_results)
+    message_embeddings = embedder.embed_messages(user_logs)
+    chroma.add_documents(message_embeddings)
+
+    embedded_question = embedder.embed_question(question)
+
+    results = chroma.find_similar([embedded_question], name, n_results)
 
     # Assert:
     assert len(results) == 3
+
+    docs = [r.document for r in results]
     target_message = "Hi everyone! It's raining cats and dogs here."
     # validate one of returned documents contains the target message text
-    assert any(target_message in doc for (_q, doc) in results), "Target message was not found in results"
+    assert any(target_message in doc for doc in docs), "Target message was not found in results"
