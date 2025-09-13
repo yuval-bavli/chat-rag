@@ -39,6 +39,9 @@ def _embedder_find_similar_flow(with_name: bool) -> None:
     embedded_question = embedder.embed_question(question)
 
     results = chroma.find_similar([embedded_question], name, n_results)
+    print(f"Found {len(results)} results:")
+    for r in results:
+        print(f"- {r.document} (id={r.id}, metadata={r.metadata})") 
 
     # Assert:
     assert len(results) == 3
@@ -46,4 +49,4 @@ def _embedder_find_similar_flow(with_name: bool) -> None:
     docs = [r.document for r in results]
     target_message = "Hi everyone! It's raining cats and dogs here."
     # validate one of returned documents contains the target message text
-    assert any(target_message in doc for doc in docs), "Target message was not found in results"
+    assert any(target_message in doc for doc in docs), f"Target message was not found in results\nExpected: {target_message}\nDocs found: {docs}"
