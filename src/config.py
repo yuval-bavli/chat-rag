@@ -7,14 +7,13 @@ VECTOR_MODEL_NAME2 = "intfloat/multilingual-e5-small"
 VECTOR_MODEL_NAME3 = "sentence-transformers/all-mpnet-base-v2"
 RERANK_MODEL_NAME = "cross-encoder/ms-marco-MiniLM-L6-v2"
 GPT_MODEL_NAME = "meta-llama/Meta-Llama-3.1-8B-Instruct"
-# Point to the workspace input/comments.json by default
 JSON_FILE = os.path.join(os.path.dirname(__file__), "..", "input", "comments.json")
-CHROMA_DIR = "chroma_db"     # folder to store Chroma DB
+CHROMA_DIR = "chroma_db"
 VECTOR_MODEL_NAME = VECTOR_MODEL_NAME3
 COLLECTION_NAME = "facebook_comments"
 
 CONTEXT_RESULTS_COUNT = 10
-REFINED_CONTEXT_RESULTS_COUNT = 3
+REFINED_CONTEXT_RESULTS_COUNT = 5
 
 
 class Configuration(NamedTuple):

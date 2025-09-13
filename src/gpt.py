@@ -91,5 +91,5 @@ class Gpt:
         if second_occurrence == -1:
             return full_answer
 
-        answer = full_answer[len(prompt):second_occurrence - len(substring)].strip()
+        answer = full_answer[len(prompt):second_occurrence].strip()
         return answer
