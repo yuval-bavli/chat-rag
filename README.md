@@ -1,2 +1,2 @@
 # chat-rag
-Help find answers in chats/chat-groups
+Help find answers in chats or chat-groups

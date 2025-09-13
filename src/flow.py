@@ -50,3 +50,4 @@ class Flow:
         answer = self._gpt.generate_answer(question, contexts)
         print("\n\n=== Answer ===\n")
         print(answer)
+

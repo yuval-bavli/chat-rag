@@ -4,8 +4,6 @@ from typing import Mapping, Optional, Union, List, Tuple, cast, Any
 # pip install chromadb sentence-transformers
 
 from sentence_transformers import SentenceTransformer
-from chromadb.api.models.Collection import Collection
-from torch import Tensor
 
 from src.embed_result import EmbedResult, Metadata
 from src.model_dirs import get_model_dir
