@@ -10,10 +10,7 @@ class Flow:
     def __init__(self, config: Configuration) -> None:
         self._reader = DataReader(config.input)
         self._chroma = Chroma(config.chroma_dir, config.collection_name, config.clear_collection)
-        self._embedder = Embedder(
-            config.embedder_model_name,
-            self._chroma.collection
-        )
+        self._embedder = Embedder(config.embedder_model_name)
         self._reranker = Reranker(config.rerank_model_name)
         self._context_results_count = config.context_results_count
         self._refined_context_results_count = config.refined_context_results_count
@@ -23,22 +20,25 @@ class Flow:
 
     def read_and_embed_logs(self) -> None:
         self._user_logs = self._reader.read_logs()
-        self._embedder.embed_messages(self._user_logs)
+        embeded_results = self._embedder.embed_messages(self._user_logs)
+        self._chroma.add_documents(embeded_results)
 
 
     def ask_question(self, question: str):
 
         # Query the DB
-        results = self._chroma.collection.query(
-            query_texts=[question],
+        embedded_question = self._embedder.embed_question(question)
+        results = self._chroma.find_similar(
+            embeddings=[embedded_question],
+            where=None, # for now
             n_results=self._context_results_count  # number of most relevant comments to return
         )
 
-        if not (results and results["documents"] and results["metadatas"]):
+        if len(results) == 0:
             print("No results")
             return
     
-        candidates = results["documents"][0]
+        candidates = [r.document for r in results]
         # metadatas = results["metadatas"][0]
 
         # --- Re-ranking stage ---
@@ -50,3 +50,4 @@ class Flow:
         answer = self._gpt.generate_answer(question, contexts)
         print("\n\n=== Answer ===\n")
         print(answer)
+

@@ -8,3 +8,6 @@ class UserLog(NamedTuple):
     name: str
     message: str
 
+    def to_dict(self) -> dict:
+        return self._asdict()
+
