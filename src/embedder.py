@@ -5,7 +5,8 @@ from typing import Mapping, Optional, Union, List, Tuple, cast, Any
 
 from sentence_transformers import SentenceTransformer
 
-from src.embed_result import EmbedResult, Metadata
+from src.embed_result import EmbedResult
+from src.metadata import Metadata
 from src.model_dirs import get_model_dir
 from src.user_log import UserLog
 
@@ -33,12 +34,7 @@ class Embedder:
 
         # <-- annotate metadatas as List[Metadata] so the typechecker sees the right type
         metadatas: List[Metadata] = [
-            {
-                "name": ul.name,
-                "timestamp": ul.timestamp.isoformat(),
-                "type": "question" if "?" in ul.message else ""
-            }
-            for ul in user_logs
+            Metadata(ul.name, ul.timestamp.isoformat(), "question" if "?" in ul.message else "") for ul in user_logs
         ]
 
         results: list[EmbedResult] = []

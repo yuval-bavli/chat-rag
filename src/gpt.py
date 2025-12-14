@@ -1,12 +1,42 @@
-from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+from transformers import (
+    AutoModelForCausalLM,
+    AutoTokenizer,
+    BitsAndBytesConfig,
+    StoppingCriteria,
+    StoppingCriteriaList,
+)
 import torch
 
 from src.stopwatch import Stopwatch
 from src.model_dirs import get_model_dir
 
+
+class StopOnSequence(StoppingCriteria):
+    def __init__(self, stop_ids: list[int]):
+        super().__init__()
+        self.stop_ids = stop_ids
+
+    def __call__(self, input_ids, scores, **kwargs):
+        # input_ids: tensor of shape (batch, seq_len)
+        if not self.stop_ids:
+            return False
+        seq = input_ids[0].tolist()
+        n = len(self.stop_ids)
+        if len(seq) < n:
+            return False
+        return seq[-n:] == self.stop_ids
+
 # Load a local instruct-tuned LLM (quantized GGUF version with llama.cpp is even easier)
 
 class Gpt:
+    
+    SYSTEM_PROMPT = (
+        "You are a helpful assistant that helps people find information. "
+        "You are given a context and a question, and you answer the question based on the context. "
+        "If you don't know the answer, just say you don't know, don't try to make up an answer. "
+        "Answer in a concise and clear manner, and finish the answer with three semicolons (;;;)."
+    )
+
     def __init__(self, model_name: str) -> None:
         self._model_name = model_name
         model_file = get_model_dir(model_name)
@@ -31,12 +61,7 @@ class Gpt:
     def get_system_prompt(self) -> str:
         # We tell it to end answer with ";;;" so we can parse the answer out of the full text it generates.
         # It tends to hallucinate answers after the first answer, so we want to fish out only the relevant answer.
-        return (
-            "You are a helpful assistant that helps people find information. "
-            "You are given a context and a question, and you answer the question based on the context. "
-            "If you don't know the answer, just say you don't know, don't try to make up an answer. "
-            "Answer in a concise and clear manner, and finish the answer with three semicolons (;;;)."
-        )
+        return self.SYSTEM_PROMPT
     
     def _print_bottleneck(self):
         torch.set_printoptions(profile="short")
@@ -58,13 +83,19 @@ class Gpt:
         print(f"Prompt to GPT:\n{prompt}\n")
         inputs = self._tokenizer(prompt, return_tensors="pt").to("cuda")
         print(f"Generating answer with model {self._model_name}...")
-        
+        # Prepare token-based stopping on the literal ';;;' to prevent post-hoc hallucination
+        stop_ids = self._tokenizer.encode(";;;", add_special_tokens=False)
+        stop_criteria = StoppingCriteriaList([StopOnSequence(stop_ids)])
+
         stopwatch = Stopwatch.create_and_start()
         outputs = self._model.generate(
             **inputs,
             max_new_tokens=300,
-            temperature=0.7,
+            temperature=0.3,            # lower temperature for less creativity
+            top_p=0.9,
             do_sample=True,
+            repetition_penalty=1.05,
+            stopping_criteria=stop_criteria,
             eos_token_id=self._tokenizer.eos_token_id,  # stop at EOS
         )
         stopwatch.stop()
@@ -72,10 +103,10 @@ class Gpt:
         full_answer = self._tokenizer.decode(outputs[0], skip_special_tokens=True)
         print(f"Full answer from GPT:\n{full_answer}\n\nExtracting relavnt answer\n")
 
-        answer = self.find_answer(prompt, full_answer, ";;;")
+        answer = self._find_answer(prompt, full_answer, ";;;")
         return answer
 
-    def find_answer(self, prompt: str, full_answer: str, substring: str) -> str:
+    def _find_answer(self, prompt: str, full_answer: str, substring: str) -> str:
         # we want to find the second occurrence of substring after prompt.
         # first one is the example we give in the prompt (e.g. answer ends with ";;;")
         # second one is the end of the actual answer.

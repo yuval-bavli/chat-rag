@@ -1,6 +1,7 @@
 from src.chroma import Chroma
 from src.config import Configuration
 from src.embedder import Embedder
+from src.metadata import Metadata
 from src.reranker import Reranker
 from src.data_reader import DataReader
 from src.gpt import Gpt
@@ -37,6 +38,11 @@ class Flow:
         if len(results) == 0:
             print("No results")
             return
+        
+        results_str = "\n".join([f">> {r.document} (id={r.id}, metadata={r.metadata})" for r in results])
+        print(f"\n\n=== Retrieved {len(results)} results ===\n")
+        print(results_str)
+        print(f"\n\n========================================\n")
     
         candidates = [r.document for r in results]
         # metadatas = results["metadatas"][0]
@@ -44,8 +50,9 @@ class Flow:
         # --- Re-ranking stage ---
         pairs = [(question, doc) for doc in candidates]
         top_indexes = self._reranker._get_closest_indexes(pairs, top_k=self._refined_context_results_count)
+        metadatas = [Metadata.from_dict(results[i].metadata) for i in top_indexes] # type: ignore
 
-        contexts = [candidates[i] for i in top_indexes]
+        contexts = [f"{md.timestamp} {candidates[i]}" for md, i in zip(metadatas, top_indexes)]
         # metas = [metadatas[i] for i in top_indexes]
         answer = self._gpt.generate_answer(question, contexts)
         print("\n\n=== Answer ===\n")

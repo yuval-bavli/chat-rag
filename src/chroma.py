@@ -7,8 +7,7 @@ from chromadb.api.models.Collection import Collection
 from torch import Tensor
 
 from src.embed_result import EmbedResult, get_documents, get_embeddings, get_ids, get_metadatas
-
-Metadata = Mapping[str, Optional[Union[str, int, float, bool]]]
+from src.metadata import Metadata
 
 
 class Chroma:
@@ -38,13 +37,13 @@ class Chroma:
     def add_documents(self, embedded_results: list[EmbedResult]) -> None:
         ids = get_ids(embedded_results)
         documents = get_documents(embedded_results)
-        metadatas = get_metadatas(embedded_results)
+        metadatas_list = get_metadatas(embedded_results)
         embeddings = [cast(PyEmbedding, e) for e in get_embeddings(embedded_results)]
 
         self.collection.add(
             documents=documents,
             ids=ids,
-            metadatas=metadatas,
+            metadatas=metadatas_list, # type: ignore
             embeddings=embeddings
         )
 
@@ -71,20 +70,20 @@ class Chroma:
         # Chroma returns lists-of-lists for batch queries; get first batch safely
         documents = (query_result.get("documents") or [[]])[0]
         ids = (query_result.get("ids") or [[]])[0]
-        metadatas = (query_result.get("metadatas") or [[]])[0]
+        metadatas_list = (query_result.get("metadatas") or [[]])[0]
 
         results: list[EmbedResult] = []
 
         for i, doc in enumerate(documents):
             id: str = ids[i] if i < len(ids) else ""
-            metadata: Metadata = metadatas[i] if i < len(metadatas) else {}
+            raw_meta = metadatas_list[i] if i < len(metadatas_list) else {}
+            if isinstance(raw_meta, Metadata):
+                metadata: Metadata = raw_meta
+            else:
+                # raw_meta is expected to be a dict from Chroma; convert to Metadata
+                metadata = Metadata.from_dict(raw_meta if isinstance(raw_meta, dict) else {})
             embedding = []  # placeholder, not returned by Chroma
-            result = EmbedResult(
-                id,
-                doc,
-                metadata,
-                embedding
-            )
+            result = EmbedResult(id, doc, metadata, embedding)
             results.append(result)
 
         return results
